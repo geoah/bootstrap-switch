@@ -423,9 +423,10 @@
           })(this),
           "mousedown.bootstrapSwitch touchstart.bootstrapSwitch": (function(_this) {
             return function(e) {
-              if (_this.isLabelDragging || _this.options.disabled || _this.options.readonly || _this.options.indeterminate) {
+              if (_this.isLabelDragging || _this.options.disabled || _this.options.readonly || _this.options.indeterminate || _this.lastTouchstartTime < (new Date()).getTime()) {
                 return;
               }
+              _this.lastTouchstartTime = (new Date()).getTime();
               e.preventDefault();
               _this.isLabelDragging = true;
               return _this.$element.trigger("focus.bootstrapSwitch");

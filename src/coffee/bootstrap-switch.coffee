@@ -313,8 +313,9 @@ do ($ = window.jQuery, window) ->
           @$element.trigger "focus.bootstrapSwitch"
 
         "mousedown.bootstrapSwitch touchstart.bootstrapSwitch": (e) =>
-          return if @isLabelDragging or @options.disabled or @options.readonly or @options.indeterminate
+          return if @isLabelDragging or @options.disabled or @options.readonly or @options.indeterminate or @lastTouchstartTime < (new Date()).getTime()
 
+          @lastTouchstartTime = (new Date()).getTime()
           e.preventDefault()
 
           @isLabelDragging = true
