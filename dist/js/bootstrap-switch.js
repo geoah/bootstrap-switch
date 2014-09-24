@@ -31,11 +31,13 @@
           options = {};
         }
         this.$element = $(element);
+        console.info("DRAGGABLE: " + this.$element.data("draggable"));
         this.options = $.extend({}, $.fn.bootstrapSwitch.defaults, {
           state: this.$element.is(":checked"),
           size: this.$element.data("size"),
           animate: this.$element.data("animate"),
           disabled: this.$element.is(":disabled"),
+          draggable: this.$element.data("draggable") !== "false",
           readonly: this.$element.is("[readonly]"),
           indeterminate: this.$element.data("indeterminate"),
           onColor: this.$element.data("on-color"),
@@ -61,6 +63,9 @@
               }
               if (_this.options.disabled) {
                 classes.push("" + _this.options.baseClass + "-disabled");
+              }
+              if (_this.options.draggable) {
+                classes.push("" + _this.options.baseClass + "-draggable");
               }
               if (_this.options.readonly) {
                 classes.push("" + _this.options.baseClass + "-readonly");
@@ -100,6 +105,10 @@
         })(this));
         this.$element.on("switchChange.bootstrapSwitch", (function(_this) {
           return function() {
+            if (_this.lastCalltime && _this.lastCalltime + 500 > (new Date()).getTime()) {
+              return;
+            }
+            _this.lastCalltime = (new Date()).getTime();
             return _this.options.onSwitchChange.apply(element, arguments);
           };
         })(this));
@@ -383,12 +392,18 @@
       BootstrapSwitch.prototype._handleHandlers = function() {
         this.$on.on("click.bootstrapSwitch", (function(_this) {
           return function(e) {
+            if (_this.touchended && _this.touchended + 500 > (new Date()).getTime()) {
+              return;
+            }
             _this.state(false);
             return _this.$element.trigger("focus.bootstrapSwitch");
           };
         })(this));
         return this.$off.on("click.bootstrapSwitch", (function(_this) {
           return function(e) {
+            if (_this.touchended && _this.touchended + 500 > (new Date()).getTime()) {
+              return;
+            }
             _this.state(true);
             return _this.$element.trigger("focus.bootstrapSwitch");
           };
@@ -400,7 +415,7 @@
           "mousemove.bootstrapSwitch touchmove.bootstrapSwitch": (function(_this) {
             return function(e) {
               var left, pageX, percent, right;
-              if (!_this.isLabelDragging) {
+              if (!(_this.isLabelDragging && _this.options.draggable)) {
                 return;
               }
               e.preventDefault();
@@ -423,10 +438,9 @@
           })(this),
           "mousedown.bootstrapSwitch touchstart.bootstrapSwitch": (function(_this) {
             return function(e) {
-              if (_this.isLabelDragging || _this.options.disabled || _this.options.readonly || _this.options.indeterminate || _this.lastTouchstartTime < (new Date()).getTime()) {
+              if (_this.isLabelDragging || _this.options.disabled || _this.options.readonly || _this.options.indeterminate) {
                 return;
               }
-              _this.lastTouchstartTime = (new Date()).getTime();
               e.preventDefault();
               _this.isLabelDragging = true;
               return _this.$element.trigger("focus.bootstrapSwitch");
@@ -434,6 +448,7 @@
           })(this),
           "mouseup.bootstrapSwitch touchend.bootstrapSwitch": (function(_this) {
             return function(e) {
+              console.info("DRAGGABLE2: " + _this.$element.data("draggable"));
               if (!_this.isLabelDragging) {
                 return;
               }
@@ -448,7 +463,8 @@
               } else {
                 _this.state(!_this.options.state);
               }
-              return _this.isLabelDragging = false;
+              _this.isLabelDragging = false;
+              return _this.touchended = (new Date()).getTime();
             };
           })(this),
           "mouseleave.bootstrapSwitch": (function(_this) {
@@ -515,6 +531,7 @@
       size: null,
       animate: true,
       disabled: false,
+      draggable: true,
       readonly: false,
       indeterminate: false,
       onColor: "primary",

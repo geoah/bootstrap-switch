@@ -4,11 +4,13 @@ do ($ = window.jQuery, window) ->
   class BootstrapSwitch
     constructor: (element, options = {}) ->
       @$element = $ element
+      console.info "DRAGGABLE: " + @$element.data("draggable")
       @options = $.extend {}, $.fn.bootstrapSwitch.defaults,
         state: @$element.is ":checked"
         size: @$element.data "size"
         animate: @$element.data "animate"
         disabled: @$element.is ":disabled"
+        draggable: @$element.data("draggable") isnt "false"
         readonly: @$element.is "[readonly]"
         indeterminate: @$element.data "indeterminate"
         onColor: @$element.data "on-color"
@@ -28,6 +30,7 @@ do ($ = window.jQuery, window) ->
           classes.push "#{@options.baseClass}-#{@options.size}" if @options.size?
           classes.push "#{@options.baseClass}-animate" if @options.animate
           classes.push "#{@options.baseClass}-disabled" if @options.disabled
+          classes.push "#{@options.baseClass}-draggable" if @options.draggable
           classes.push "#{@options.baseClass}-readonly" if @options.readonly
           classes.push "#{@options.baseClass}-indeterminate" if @options.indeterminate
           classes.push "#{@options.baseClass}-id-#{@$element.attr("id")}" if @$element.attr "id"
@@ -49,7 +52,11 @@ do ($ = window.jQuery, window) ->
 
       # set up events
       @$element.on "init.bootstrapSwitch", => @options.onInit.apply element, arguments
-      @$element.on "switchChange.bootstrapSwitch", => @options.onSwitchChange.apply element, arguments
+      @$element.on "switchChange.bootstrapSwitch", =>
+        return if @lastCalltime and @lastCalltime + 500 > (new Date()).getTime()
+        @lastCalltime = (new Date()).getTime()
+
+        @options.onSwitchChange.apply element, arguments
 
       # reassign elements after dom modification
       @$container = @$element.wrap(@$container).parent()
@@ -283,17 +290,19 @@ do ($ = window.jQuery, window) ->
 
     _handleHandlers: ->
       @$on.on "click.bootstrapSwitch", (e) =>
+        return if @touchended and @touchended + 500 > (new Date()).getTime()
         @state false
         @$element.trigger "focus.bootstrapSwitch"
 
       @$off.on "click.bootstrapSwitch", (e) =>
+        return if @touchended and @touchended + 500 > (new Date()).getTime()
         @state true
         @$element.trigger "focus.bootstrapSwitch"
 
     _labelHandlers: ->
       @$label.on
         "mousemove.bootstrapSwitch touchmove.bootstrapSwitch": (e) =>
-          return unless @isLabelDragging
+          return unless @isLabelDragging and @options.draggable
 
           e.preventDefault()
 
@@ -313,15 +322,15 @@ do ($ = window.jQuery, window) ->
           @$element.trigger "focus.bootstrapSwitch"
 
         "mousedown.bootstrapSwitch touchstart.bootstrapSwitch": (e) =>
-          return if @isLabelDragging or @options.disabled or @options.readonly or @options.indeterminate or @lastTouchstartTime < (new Date()).getTime()
+          return if @isLabelDragging or @options.disabled or @options.readonly or @options.indeterminate
 
-          @lastTouchstartTime = (new Date()).getTime()
           e.preventDefault()
 
           @isLabelDragging = true
           @$element.trigger "focus.bootstrapSwitch"
 
         "mouseup.bootstrapSwitch touchend.bootstrapSwitch": (e) =>
+          console.info "DRAGGABLE2: " + @$element.data("draggable")
           return unless @isLabelDragging
 
           e.preventDefault()
@@ -334,6 +343,7 @@ do ($ = window.jQuery, window) ->
           else
             @state not @options.state
           @isLabelDragging = false
+          @touchended = (new Date()).getTime()
 
         "mouseleave.bootstrapSwitch": (e) =>
           @$label.trigger "mouseup.bootstrapSwitch"
@@ -377,6 +387,7 @@ do ($ = window.jQuery, window) ->
     size: null
     animate: true
     disabled: false
+    draggable: false
     readonly: false
     indeterminate: false
     onColor: "primary"
