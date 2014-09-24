@@ -10,7 +10,6 @@ do ($ = window.jQuery, window) ->
         size: @$element.data "size"
         animate: @$element.data "animate"
         disabled: @$element.is ":disabled"
-        draggable: @$element.data("draggable") isnt "false"
         readonly: @$element.is "[readonly]"
         indeterminate: @$element.data "indeterminate"
         onColor: @$element.data "on-color"

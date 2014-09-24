@@ -37,7 +37,6 @@
           size: this.$element.data("size"),
           animate: this.$element.data("animate"),
           disabled: this.$element.is(":disabled"),
-          draggable: this.$element.data("draggable") !== "false",
           readonly: this.$element.is("[readonly]"),
           indeterminate: this.$element.data("indeterminate"),
           onColor: this.$element.data("on-color"),
