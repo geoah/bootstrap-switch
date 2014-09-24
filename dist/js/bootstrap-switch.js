@@ -531,7 +531,7 @@
       size: null,
       animate: true,
       disabled: false,
-      draggable: true,
+      draggable: false,
       readonly: false,
       indeterminate: false,
       onColor: "primary",
